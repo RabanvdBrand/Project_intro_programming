@@ -32,28 +32,25 @@ import seaborn as sns
 #import warnings
 #warnings.filterwarnings("ignore")
 
-st.title("🎈 My new app")
-st.write(
-    "Let's start building! For help and inspiration, head over to [docs.streamlit.io](https://docs.streamlit.io/)."
-)
-
+st.header("Dataframe description", divider= "blue")
 df = pd.read_csv('https://raw.githubusercontent.com/LUCE-Blockchain/Databases-for-teaching/refs/heads/main/Framingham%20Dataset.csv')
 
-df
+st.write(df.describe())
 
 columns_to_check = ["CURSMOKE", "CIGPDAY", "STROKE", "ANYCHD", "AGE", "SEX", "BMI", "TOTCHOL", "HDLC", "LDLC"]
-df[columns_to_check]
+
 
 columns_to_check1 = ["CURSMOKE", "CIGPDAY", "STROKE", "ANYCHD", "AGE", "SEX", "BMI", "TOTCHOL"]
-df[columns_to_check1].isnull().sum()
 
 mean_values = df[columns_to_check].mean()
 
 # Fill NaN values in the specified columns with the calculated means
 df.loc[:, columns_to_check] = df.loc[:, columns_to_check].fillna(mean_values)
 
+st.header("Zero values after taking the mean", divider= "blue")
 columns_to_check2 = ["AGE", "SEX", "BMI", "TOTCHOL"]
 (df[columns_to_check2] == 0).sum()
+st.write(df[columns_to_check1].isnull().sum())
 
 #remove outliers in cholesterol and BMI of whole dataset.
 df.loc[(df['TOTCHOL'] <= 100) | (df['TOTCHOL'] > 400), 'TOTCHOL'] = np.nan
@@ -64,6 +61,8 @@ df.loc[(df['BMI'] <= 10) | (df['BMI'] >= 50), 'BMI'] = np.nan
 df.TOTCHOL = df.TOTCHOL.fillna(df.TOTCHOL.mean())
 df.BMI = df.BMI.fillna(df.BMI.mean())
 
+st.header("Zero values after taking out the outliers and the missing values", divider= "blue")
+st.write(df[columns_to_check2].isnull().sum())
 
 from sklearn.impute import KNNImputer
 imputer = KNNImputer(n_neighbors=2).set_output(transform = "pandas")
@@ -93,24 +92,22 @@ mean_values = Second_followup[columns_to_check3].mean()
 # Fill NaN values in the specified columns with the calculated means
 Second_followup.loc[:, columns_to_check3] = Second_followup.loc[:, columns_to_check3].fillna(mean_values)
 
+st.header("Zero values for HDLC and LC", divider= "blue")
+st.write((Second_followup[columns_to_check3] == 0).sum())
 
-y_var = st.selectbox(
-    "How would you like to be contacted?",
+
+y_var1 = st.selectbox(
+    "Choose variable",
     (columns_to_check),
     index=None,
-    placeholder="Select contact method...",
+    placeholder="Select variable",
+    key= "original"
 )
-test = sns.boxplot(data = df, x = "ANYCHD", y = y_var, hue="PERIOD")
-st.pyplot(test.get_figure())
+test1 = sns.boxplot(data = df, x = "ANYCHD", y = y_var1, hue="PERIOD")
+st.pyplot(test1.get_figure())
 
 for i, group in df.groupby('PERIOD'):
     sns.lmplot(x="CIGPDAY", y="STROKE", data=group, fit_reg=True)
-plt.show
-
-
-
-
-
 
 
 
