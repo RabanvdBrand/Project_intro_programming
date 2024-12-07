@@ -96,7 +96,7 @@ st.header("Zero values for HDLC and LC", divider= "blue")
 st.write((Second_followup[columns_to_check3] == 0).sum())
 
 
-st.header("Boxplot, and correlationplot")
+st.header("Widget", divider= "blue")
 # Assuming `df` is your dataframe and `columns_to_check` is a list of columns
 y_var1 = st.selectbox(
     "Choose Y variable",
@@ -125,11 +125,21 @@ selected_period = st.selectbox(
 # Filter the dataframe based on the selected period
 filtered_df = df[df['PERIOD'] == selected_period]
 
+st.header("Boxplot", divider= "blue")
 # Create the boxplot for the selected period
 test1 = sns.boxplot(data=filtered_df, x=x_var1, y=y_var1, hue="PERIOD")
 st.pyplot(test1.get_figure())
 
+st.header("Correlation plot", divider= "blue")
 # If you want to plot a regression line for the selected period
 for i, group in filtered_df.groupby('PERIOD'):
     sns.lmplot(x=x_var1, y=y_var1, data=group, fit_reg=True)
     st.pyplot(plt.gcf())  # Display the plot for each period group
+
+st.header("Histogram", divider= "blue")
+plt.figure(figsize=(8, 6))
+sns.histplot(filtered_df[x_var1], kde=True, color='blue', bins=10)
+plt.title(f'Histogram of {x_var1} for Period: {selected_period}')
+plt.xlabel(x_var1)
+plt.ylabel('Frequency')
+st.pyplot(plt.gcf())
