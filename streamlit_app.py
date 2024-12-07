@@ -25,6 +25,7 @@ pd.set_option('display.max_columns', None)
 import warnings
 warnings.filterwarnings("ignore")
 from sklearn.metrics import confusion_matrix
+from sklearn.neural_network import MLPClassifier
 # You can set a general style for your plots like this
 #plt.style.use('ggplot')
 # plt.style.use('seaborn-whitegrid')
@@ -170,75 +171,73 @@ st.pyplot(plt.gcf())
 
 st.header("Logistic regression")
 
-tot_df_model = df[["CURSMOKE", "CIGPDAY", "STROKE", "ANYCHD", "AGE", "SEX", "BMI", "TOTCHOL", "HDLC", "LDLC","PERIOD"]]
+tot_df_model = df[["CURSMOKE", "CIGPDAY", "STROKE", "ANYCHD", "AGE", "SEX", "BMI", "TOTCHOL", "HDLC", "LDLC", "PERIOD"]]
 
+# Define a model function
 def model(classifier, df_to_model):
-  X = df_to_model.drop(columns = ['ANYCHD', "PERIOD"])
-  y = df_to_model['ANYCHD']
-  # split data into training and testing sets
-  X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.2, random_state = 42)
-  classifier.fit(X_train, y_train)
-  prediction = classifier.predict(X_test)
+    X = df_to_model.drop(columns=['ANYCHD', "PERIOD"])
+    y = df_to_model['ANYCHD']
+    # Split data into training and testing sets
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+    classifier.fit(X_train, y_train)
+    prediction = classifier.predict(X_test)
+    return X_train, X_test, y_train, y_test, prediction
 
-  return X_train, X_test, y_train, y_test, prediction
-
+# Accuracy metrics function
 def accuracy_metrics(y_test, prediction, classifier, X_train, y_train, X_test):
-    # Accuracy Score
+    # Accuracy
     accuracy = accuracy_score(y_test, prediction)
     st.write(f"Accuracy: {accuracy * 100:.2f}%")
 
-    #Classification report
-    # Assuming y_test and prediction are already defined
+    # Classification report
     report = classification_report(y_test, prediction, output_dict=True)
-
-    # Convert the classification report dictionary into a DataFrame
-    report_df = pd.DataFrame(report).transpose()  # Transpose to make classes as rows
-
-    # Display the report as a dataframe in Streamlit
+    report_df = pd.DataFrame(report).transpose()
     st.write("Classification Report:")
-    st.dataframe(report_df) 
-
+    st.dataframe(report_df)
 
     # Cross Validation Score
     cv = RepeatedStratifiedKFold(n_splits=10, n_repeats=3, random_state=1)
     cv_score = cross_val_score(classifier, X_train, y_train, cv=cv, scoring='roc_auc').mean()
     st.write(f"Cross Validation Score (ROC AUC): {cv_score * 100:.2f}%")
 
-
-
     # ROC Curve
     st.write("ROC Curve:")
     fig, ax = plt.subplots()
     RocCurveDisplay.from_estimator(classifier, X_test, y_test, ax=ax)
-    st.pyplot(fig)  # This will render the plot in Streamlit
+    st.pyplot(fig)
 
-
-
-
-
+# Confusion Matrix function
 def Confusion_matrix(model, X_test, y_test, ax=None):
-    # Calculate confusion matrix
     cm = confusion_matrix(y_test, model.predict(X_test))
-
-    # If ax is provided, use it for plotting
     sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', ax=ax)
     ax.set_title("Confusion Matrix")
     ax.set_xlabel("Predicted")
     ax.set_ylabel("Actual")
     plt.tight_layout()
 
-classifier_lr = LogisticRegression(random_state = 0, C=10, penalty='l2', class_weight='balanced')
+# Streamlit app
+st.header("Model Comparison")
 
-# Run the model
-X_train, X_test, y_train, y_test, prediction = model(classifier_lr, tot_df_model)
+# Model selection widget
+model_choice = st.selectbox("Choose a prediction model", ["Logistic Regression", "Random Forest", "Neural Network"])
 
-#Create the accuracy_metrics
-accuracy_metrics(y_test, prediction, classifier_lr, X_train, y_train, X_test)
+# Define classifiers based on selection
+if model_choice == "Logistic Regression":
+    classifier = LogisticRegression(random_state=0, C=10, penalty='l2', class_weight='balanced')
+elif model_choice == "Random Forest":
+    classifier = RandomForestClassifier(random_state=0, n_estimators=100, class_weight='balanced')
+elif model_choice == "Neural Network":
+    classifier = MLPClassifier(random_state=0, max_iter=500)
+
+# Run the selected model
+X_train, X_test, y_train, y_test, prediction = model(classifier, tot_df_model)
+
+# Display accuracy metrics
+st.subheader(f"Results for {model_choice}")
+accuracy_metrics(y_test, prediction, classifier, X_train, y_train, X_test)
 
 # Display confusion matrix
 st.write("Confusion Matrix:")
-
-# Create a figure and axis for the confusion matrix plot
-fig, ax = plt.subplots()  # Create a new figure and axis
-Confusion_matrix(classifier_lr, X_test, y_test, ax=ax)  # Plot the confusion matrix
-st.pyplot(fig) 
+fig, ax = plt.subplots()
+Confusion_matrix(classifier, X_test, y_test, ax=ax)
+st.pyplot(fig)
