@@ -96,19 +96,40 @@ st.header("Zero values for HDLC and LC", divider= "blue")
 st.write((Second_followup[columns_to_check3] == 0).sum())
 
 
+st.header("Boxplot, and correlationplot")
+# Assuming `df` is your dataframe and `columns_to_check` is a list of columns
 y_var1 = st.selectbox(
-    "Choose variable",
-    (columns_to_check),
+    "Choose Y variable",
+    columns_to_check,
     index=None,
-    placeholder="Select variable",
-    key= "original"
+    placeholder="Select variable Y",
+    key="original1"
 )
-test1 = sns.boxplot(data = df, x = "ANYCHD", y = y_var1, hue="PERIOD")
+
+x_var1 = st.selectbox(
+    "Choose X variable",
+    columns_to_check,
+    index=None,
+    placeholder="Select variable X",
+    key="original2"
+)
+
+# Add a selectbox for periods
+period_options = df['PERIOD'].unique()  # Get the unique periods
+selected_period = st.selectbox(
+    "Select Period",
+    period_options,
+    key="period"
+)
+
+# Filter the dataframe based on the selected period
+filtered_df = df[df['PERIOD'] == selected_period]
+
+# Create the boxplot for the selected period
+test1 = sns.boxplot(data=filtered_df, x=x_var1, y=y_var1, hue="PERIOD")
 st.pyplot(test1.get_figure())
 
-for i, group in df.groupby('PERIOD'):
-    sns.lmplot(x="CIGPDAY", y="STROKE", data=group, fit_reg=True)
-
-
-
-
+# If you want to plot a regression line for the selected period
+for i, group in filtered_df.groupby('PERIOD'):
+    sns.lmplot(x=x_var1, y=y_var1, data=group, fit_reg=True)
+    st.pyplot(plt.gcf())  # Display the plot for each period group
