@@ -2,4 +2,6 @@ streamlit
 matplotlib
 seaborn
 scikit-learn
-#warnings
+LightGBM
+Catboost
+xgboost 
