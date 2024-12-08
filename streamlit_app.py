@@ -26,6 +26,12 @@ import warnings
 warnings.filterwarnings("ignore")
 from sklearn.metrics import confusion_matrix
 from sklearn.neural_network import MLPClassifier
+from sklearn.svm import SVC
+from sklearn.neighbors import KNeighborsClassifier
+from lightgbm import LGBMClassifier
+from xgboost import XGBClassifier
+from catboost import CatBoostClassifier
+
 # You can set a general style for your plots like this
 #plt.style.use('ggplot')
 # plt.style.use('seaborn-whitegrid')
@@ -169,7 +175,6 @@ sns.heatmap(numeric_df.corr(), annot=True)
 st.pyplot(plt.gcf())
 
 
-st.header("Logistic regression")
 
 tot_df_model = df[["CURSMOKE", "CIGPDAY", "STROKE", "ANYCHD", "AGE", "SEX", "BMI", "TOTCHOL", "HDLC", "LDLC", "PERIOD"]]
 
@@ -219,7 +224,7 @@ def Confusion_matrix(model, X_test, y_test, ax=None):
 st.header("Model Comparison")
 
 # Model selection widget
-model_choice = st.selectbox("Choose a prediction model", ["Logistic Regression", "Random Forest", "Neural Network"])
+model_choice = st.selectbox("Choose a prediction model", ["Logistic Regression", "Random Forest", "Neural Network", "Support Vector Machine", "K-nearest neighbour", "LightGBM", "Catboost", "Xgboost"])
 
 # Define classifiers based on selection
 if model_choice == "Logistic Regression":
@@ -228,6 +233,17 @@ elif model_choice == "Random Forest":
     classifier = RandomForestClassifier(random_state=0, n_estimators=100, class_weight='balanced')
 elif model_choice == "Neural Network":
     classifier = MLPClassifier(random_state=0, max_iter=500)
+elif model_choice == "Support Vector Machine":
+    classifier = SVC(random_state=0, kernel='rbf', C=1.0, probability=True)
+elif model_choice == "K-nearest neighbour":
+    classifier = KNeighborsClassifier(n_neighbors=5)
+elif model_choice == "LightGBM":
+    classifier = LGBMClassifier(random_state=0, n_estimators=100, learning_rate=0.1)
+elif model_choice == "Xgboost":
+    classifier = XGBClassifier(random_state=0, n_estimators=100, learning_rate=0.1)
+elif model_choice == "Catboost":
+    classifier = CatBoostClassifier(random_state=0, iterations=100, learning_rate=0.1, verbose=False)
+
 
 # Run the selected model
 X_train, X_test, y_train, y_test, prediction = model(classifier, tot_df_model)
@@ -241,3 +257,4 @@ st.write("Confusion Matrix:")
 fig, ax = plt.subplots()
 Confusion_matrix(classifier, X_test, y_test, ax=ax)
 st.pyplot(fig)
+
