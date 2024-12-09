@@ -244,9 +244,18 @@ elif model_choice == "Xgboost":
 elif model_choice == "Catboost":
     classifier = CatBoostClassifier(random_state=0, iterations=100, learning_rate=0.1, verbose=False)
 
+period_options = df['PERIOD'].unique()  # Get the unique periods
+#period_options = period_options + "Complete_model"
+model_period = st.selectbox(
+    "Select Period to model",
+    period_options,
+    key="model_period"
+)
+
+df_model_filtered = tot_df_model[tot_df_model['PERIOD'] == model_period]
 
 # Run the selected model
-X_train, X_test, y_train, y_test, prediction = model(classifier, tot_df_model)
+X_train, X_test, y_train, y_test, prediction = model(classifier, df_model_filtered)
 
 # Display accuracy metrics
 st.subheader(f"Results for {model_choice}")
