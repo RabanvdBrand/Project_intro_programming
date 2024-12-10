@@ -115,7 +115,7 @@ Second_followup.loc[:, columns_to_check3] = Second_followup.loc[:, columns_to_ch
 st.header("Zero values for HDLC and LC", divider= "blue")
 st.write((Second_followup[columns_to_check3] == 0).sum())
 
-st.header("Widget", divider= "blue")
+st.header("Variable and period selection", divider= "blue")
 # Assuming `df` is your dataframe and `columns_to_check` is a list of columns
 y_var1 = st.selectbox(
     "Choose Y variable",
