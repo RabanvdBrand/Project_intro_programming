@@ -144,20 +144,20 @@ selected_period = st.selectbox(
 # Filter the dataframe based on the selected period
 filtered_df = df[df['PERIOD'] == selected_period]
 
-st.header("Boxplot", divider= "blue")
+st.header(f"Boxplot for {y_var1} vs {x_var1} for period {selected_period}", divider= "blue")
 # Create the boxplot for the selected period
 test1 = sns.boxplot(data=filtered_df, x=x_var1, y=y_var1)
 st.pyplot(test1.get_figure())
 
 if x_var1 != None and y_var1 != None:
-    st.header("Correlation plot", divider= "blue")
+    st.header(f"Correlation plot  for {y_var1} vs {x_var1} for period {selected_period}", divider= "blue")
     # If you want to plot a regression line for the selected period
     for i, group in filtered_df.groupby('PERIOD'):
         sns.lmplot(x=x_var1, y=y_var1, data=group, fit_reg=True)
         st.pyplot(plt.gcf())  # Display the plot for each period group
 
 if x_var1 != None:
-    st.header("Histogram", divider= "blue")
+    st.header(f"Histogram  of {x_var1} for period {selected_period}", divider= "blue")
     plt.figure(figsize=(8, 6))
     sns.histplot(filtered_df[x_var1], kde=True, color='blue', bins=10)
     plt.title(f'Histogram of {x_var1} for Period: {selected_period}')
