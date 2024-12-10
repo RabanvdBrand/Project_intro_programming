@@ -97,10 +97,6 @@ Before_followup = df[df.PERIOD == 1]
 First_followup = df[df.PERIOD == 2]
 Second_followup = df[df.PERIOD == 3]
 
-# Optionally, you can check the size of each DataFrame
-print("Participants before followup:", Before_followup.shape[0])
-print("Participants in first follow up:", First_followup.shape[0])
-print("Participants in second follow up:", Second_followup.shape[0])
 
 #Remove the outliers from HDLC and LDLC in the second follow up as this is the only measuring point.
 Second_followup.loc[(Second_followup['HDLC'] <= 35) | (Second_followup['HDLC'] > 80), 'HDLC'] = np.nan
@@ -150,26 +146,28 @@ filtered_df = df[df['PERIOD'] == selected_period]
 
 st.header("Boxplot", divider= "blue")
 # Create the boxplot for the selected period
-test1 = sns.boxplot(data=filtered_df, x=x_var1, y=y_var1, hue="PERIOD")
+test1 = sns.boxplot(data=filtered_df, x=x_var1, y=y_var1)
 st.pyplot(test1.get_figure())
 
-st.header("Correlation plot", divider= "blue")
-# If you want to plot a regression line for the selected period
-for i, group in filtered_df.groupby('PERIOD'):
-    sns.lmplot(x=x_var1, y=y_var1, data=group, fit_reg=True)
-    st.pyplot(plt.gcf())  # Display the plot for each period group
+if x_var1 != None and y_var1 != None:
+    st.header("Correlation plot", divider= "blue")
+    # If you want to plot a regression line for the selected period
+    for i, group in filtered_df.groupby('PERIOD'):
+        sns.lmplot(x=x_var1, y=y_var1, data=group, fit_reg=True)
+        st.pyplot(plt.gcf())  # Display the plot for each period group
 
-st.header("Histogram", divider= "blue")
-plt.figure(figsize=(8, 6))
-sns.histplot(filtered_df[x_var1], kde=True, color='blue', bins=10)
-plt.title(f'Histogram of {x_var1} for Period: {selected_period}')
-plt.xlabel(x_var1)
-plt.ylabel('Frequency')
-st.pyplot(plt.gcf())
+if x_var1 != None:
+    st.header("Histogram", divider= "blue")
+    plt.figure(figsize=(8, 6))
+    sns.histplot(filtered_df[x_var1], kde=True, color='blue', bins=10)
+    plt.title(f'Histogram of {x_var1} for Period: {selected_period}')
+    plt.xlabel(x_var1)
+    plt.ylabel('Frequency')
+    st.pyplot(plt.gcf())
 
 
 st.header("Heatmap for all variables")
-numeric_df = df.select_dtypes(include=['float64', 'int64'])
+numeric_df = df[columns_to_check].select_dtypes(include=['float64', 'int64'])
 plt.figure(figsize=(25, 25))
 sns.heatmap(numeric_df.corr(), annot=True)
 st.pyplot(plt.gcf())
