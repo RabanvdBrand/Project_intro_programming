@@ -116,6 +116,21 @@ st.header("Zero values for HDLC and LC", divider= "blue")
 st.write((Second_followup[columns_to_check3] == 0).sum())
 
 st.header("Variable and period selection", divider= "blue")
+
+# Add a selectbox for periods
+period_options = df['PERIOD'].unique()  # Get the unique periods
+selected_period = st.selectbox(
+    "Select Period",
+    period_options,
+    key="period"
+)
+
+# Filter the dataframe based on the selected period
+filtered_df = df[df['PERIOD'] == selected_period]
+if selected_period == 3:
+    columns_to_check = ["CURSMOKE", "CIGPDAY", "STROKE", "ANYCHD", "AGE", "SEX", "BMI", "TOTCHOL", "HDLC", "LDLC"]
+else:
+    columns_to_check = ["CURSMOKE", "CIGPDAY", "STROKE", "ANYCHD", "AGE", "SEX", "BMI", "TOTCHOL"]
 # Assuming `df` is your dataframe and `columns_to_check` is a list of columns
 y_var1 = st.selectbox(
     "Choose Y variable",
@@ -133,16 +148,6 @@ x_var1 = st.selectbox(
     key="original2"
 )
 
-# Add a selectbox for periods
-period_options = df['PERIOD'].unique()  # Get the unique periods
-selected_period = st.selectbox(
-    "Select Period",
-    period_options,
-    key="period"
-)
-
-# Filter the dataframe based on the selected period
-filtered_df = df[df['PERIOD'] == selected_period]
 
 st.header(f"Boxplot for {y_var1} vs {x_var1} for period {selected_period}", divider= "blue")
 # Create the boxplot for the selected period
