@@ -31,7 +31,7 @@ from sklearn.neighbors import KNeighborsClassifier
 from lightgbm import LGBMClassifier
 from xgboost import XGBClassifier
 from catboost import CatBoostClassifier
-
+import shap
 # You can set a general style for your plots like this
 #plt.style.use('ggplot')
 # plt.style.use('seaborn-whitegrid')
@@ -61,13 +61,13 @@ df = pd.read_csv('https://raw.githubusercontent.com/LUCE-Blockchain/Databases-fo
 
 st.write(df.describe())
 
-columns_to_check = ["CURSMOKE", "CIGPDAY", "STROKE", "ANYCHD", "AGE", "SEX", "BMI", "TOTCHOL", "HDLC", "LDLC"]
+columns_to_check = ["CURSMOKE", "CIGPDAY", "ANYCHD", "AGE", "SEX", "BMI", "TOTCHOL", "HDLC", "LDLC"]
 
 
-columns_to_check1 = ["CURSMOKE", "CIGPDAY", "STROKE", "ANYCHD", "AGE", "SEX", "BMI", "TOTCHOL"]
+columns_to_check1 = ["CURSMOKE", "CIGPDAY", "ANYCHD", "AGE", "SEX", "BMI", "TOTCHOL"]
 
 mean_values = df[columns_to_check].mean()
-
+df_outliers = df.copy()
 # Fill NaN values in the specified columns with the calculated means
 df.loc[:, columns_to_check] = df.loc[:, columns_to_check].fillna(mean_values)
 
@@ -111,9 +111,87 @@ mean_values = Second_followup[columns_to_check3].mean()
 
 # Fill NaN values in the specified columns with the calculated means
 Second_followup.loc[:, columns_to_check3] = Second_followup.loc[:, columns_to_check3].fillna(mean_values)
-
+df.loc[df.PERIOD == 3]["LDLC"] = Second_followup["LDLC"]
+df.loc[df.PERIOD == 3]["HDLC"] = Second_followup["HDLC"]
 st.header("Zero values for HDLC and LC", divider= "blue")
 st.write((Second_followup[columns_to_check3] == 0).sum())
+
+st.header("Histograms before and after outlier removal", divider = 'blue')
+col1, col2 = st.columns(2)
+
+with col1:
+    # Generate some data
+    plt.figure(figsize=(8, 6))
+    sns.histplot(df_outliers["TOTCHOL"], kde=True, color='blue', bins=10)
+    plt.title('Histogram of total cholesterol')
+    plt.xlabel("TOTCHOL")
+    plt.ylabel('Frequency')
+    st.pyplot(plt.gcf())
+
+with col2:
+    plt.figure(figsize=(8, 6))
+    sns.histplot(df["TOTCHOL"], kde=True, color='blue', bins=10)
+    plt.title('Histogram of total cholesterol')
+    plt.xlabel("TOTCHOL")
+    plt.ylabel('Frequency')
+    st.pyplot(plt.gcf())
+
+col3, col4 = st.columns(2)
+
+with col3:
+    # Generate some data
+    plt.figure(figsize=(8, 6))
+    sns.histplot(df_outliers["BMI"], kde=True, color='blue', bins=10)
+    plt.title('Histogram of BMI')
+    plt.xlabel("BMI")
+    plt.ylabel('Frequency')
+    st.pyplot(plt.gcf())
+
+with col4:
+    plt.figure(figsize=(8, 6))
+    sns.histplot(df["BMI"], kde=True, color='blue', bins=10)
+    plt.title('Histogram of BMI')
+    plt.xlabel("BMI")
+    plt.ylabel('Frequency')
+    st.pyplot(plt.gcf())
+
+col5, col6 = st.columns(2)
+
+with col5:
+    # Generate some data
+    plt.figure(figsize=(8, 6))
+    sns.histplot(df_outliers.loc[df.PERIOD == 3]["HDLC"], kde=True, color='blue', bins=10)
+    plt.title('Histogram of HDLC')
+    plt.xlabel("HDLC")
+    plt.ylabel('Frequency')
+    st.pyplot(plt.gcf())
+
+with col6:
+    plt.figure(figsize=(8, 6))
+    sns.histplot(df.loc[df.PERIOD == 3]["HDLC"], kde=True, color='blue', bins=10)
+    plt.title('Histogram of HDLC')
+    plt.xlabel("HDLC")
+    plt.ylabel('Frequency')
+    st.pyplot(plt.gcf())
+
+col7, col8 = st.columns(2)
+
+with col7:
+    # Generate some data
+    plt.figure(figsize=(8, 6))
+    sns.histplot(df_outliers.loc[df.PERIOD == 3]["LDLC"], kde=True, color='blue', bins=10)
+    plt.title('Histogram of LDLC')
+    plt.xlabel("LDLC")
+    plt.ylabel('Frequency')
+    st.pyplot(plt.gcf())
+
+with col8:
+    plt.figure(figsize=(8, 6))
+    sns.histplot(df.loc[df.PERIOD == 3]["LDLC"], kde=True, color='blue', bins=10)
+    plt.title('Histogram of LDLC')
+    plt.xlabel("LDLC")
+    plt.ylabel('Frequency')
+    st.pyplot(plt.gcf())
 
 st.header("Variable and period selection", divider= "blue")
 
@@ -128,9 +206,9 @@ selected_period = st.selectbox(
 # Filter the dataframe based on the selected period
 filtered_df = df[df['PERIOD'] == selected_period]
 if selected_period == 3:
-    columns_to_check = ["CURSMOKE", "CIGPDAY", "STROKE", "ANYCHD", "AGE", "SEX", "BMI", "TOTCHOL", "HDLC", "LDLC"]
+    columns_to_check = ["CURSMOKE", "CIGPDAY", "ANYCHD", "AGE", "SEX", "BMI", "TOTCHOL", "HDLC", "LDLC"]
 else:
-    columns_to_check = ["CURSMOKE", "CIGPDAY", "STROKE", "ANYCHD", "AGE", "SEX", "BMI", "TOTCHOL"]
+    columns_to_check = ["CURSMOKE", "CIGPDAY", "ANYCHD", "AGE", "SEX", "BMI", "TOTCHOL"]
 # Assuming `df` is your dataframe and `columns_to_check` is a list of columns
 y_var1 = st.selectbox(
     "Choose Y variable",
@@ -179,7 +257,7 @@ st.pyplot(plt.gcf())
 
 
 
-tot_df_model = df[["CURSMOKE", "CIGPDAY", "STROKE", "ANYCHD", "AGE", "SEX", "BMI", "TOTCHOL", "HDLC", "LDLC", "PERIOD"]]
+tot_df_model = df[["CURSMOKE", "CIGPDAY", "ANYCHD", "AGE", "SEX", "BMI", "TOTCHOL", "HDLC", "LDLC", "PERIOD"]]
 
 # Define a model function
 def model(classifier, df_to_model):
@@ -269,4 +347,5 @@ st.write("Confusion Matrix:")
 fig, ax = plt.subplots()
 Confusion_matrix(classifier, X_test, y_test, ax=ax)
 st.pyplot(fig)
+
 
