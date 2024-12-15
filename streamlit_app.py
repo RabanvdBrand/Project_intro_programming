@@ -122,7 +122,7 @@ col1, col2 = st.columns(2)
 with col1:
     # Generate some data
     plt.figure(figsize=(8, 6))
-    sns.histplot(df_outliers["TOTCHOL"], kde=True, color='blue', bins=10)
+    sns.histplot(df_outliers["TOTCHOL"], kde=True, color='blue', bins=20)
     plt.title('Histogram of total cholesterol')
     plt.xlabel("TOTCHOL")
     plt.ylabel('Frequency')
@@ -130,7 +130,7 @@ with col1:
 
 with col2:
     plt.figure(figsize=(8, 6))
-    sns.histplot(df["TOTCHOL"], kde=True, color='blue', bins=10)
+    sns.histplot(df["TOTCHOL"], kde=True, color='blue', bins=20)
     plt.title('Histogram of total cholesterol')
     plt.xlabel("TOTCHOL")
     plt.ylabel('Frequency')
@@ -141,7 +141,7 @@ col3, col4 = st.columns(2)
 with col3:
     # Generate some data
     plt.figure(figsize=(8, 6))
-    sns.histplot(df_outliers["BMI"], kde=True, color='blue', bins=10)
+    sns.histplot(df_outliers["BMI"], kde=True, color='blue', bins=20)
     plt.title('Histogram of BMI')
     plt.xlabel("BMI")
     plt.ylabel('Frequency')
@@ -149,7 +149,7 @@ with col3:
 
 with col4:
     plt.figure(figsize=(8, 6))
-    sns.histplot(df["BMI"], kde=True, color='blue', bins=10)
+    sns.histplot(df["BMI"], kde=True, color='blue', bins=20)
     plt.title('Histogram of BMI')
     plt.xlabel("BMI")
     plt.ylabel('Frequency')
@@ -160,7 +160,7 @@ col5, col6 = st.columns(2)
 with col5:
     # Generate some data
     plt.figure(figsize=(8, 6))
-    sns.histplot(df_outliers.loc[df.PERIOD == 3]["HDLC"], kde=True, color='blue', bins=10)
+    sns.histplot(df_outliers.loc[df.PERIOD == 3]["HDLC"], kde=True, color='blue', bins=20)
     plt.title('Histogram of HDLC')
     plt.xlabel("HDLC")
     plt.ylabel('Frequency')
@@ -168,7 +168,7 @@ with col5:
 
 with col6:
     plt.figure(figsize=(8, 6))
-    sns.histplot(df.loc[df.PERIOD == 3]["HDLC"], kde=True, color='blue', bins=10)
+    sns.histplot(df.loc[df.PERIOD == 3]["HDLC"], kde=True, color='blue', bins=20)
     plt.title('Histogram of HDLC')
     plt.xlabel("HDLC")
     plt.ylabel('Frequency')
@@ -179,7 +179,7 @@ col7, col8 = st.columns(2)
 with col7:
     # Generate some data
     plt.figure(figsize=(8, 6))
-    sns.histplot(df_outliers.loc[df.PERIOD == 3]["LDLC"], kde=True, color='blue', bins=10)
+    sns.histplot(df_outliers.loc[df.PERIOD == 3]["LDLC"], kde=True, color='blue', bins=20)
     plt.title('Histogram of LDLC')
     plt.xlabel("LDLC")
     plt.ylabel('Frequency')
@@ -187,7 +187,7 @@ with col7:
 
 with col8:
     plt.figure(figsize=(8, 6))
-    sns.histplot(df.loc[df.PERIOD == 3]["LDLC"], kde=True, color='blue', bins=10)
+    sns.histplot(df.loc[df.PERIOD == 3]["LDLC"], kde=True, color='blue', bins=20)
     plt.title('Histogram of LDLC')
     plt.xlabel("LDLC")
     plt.ylabel('Frequency')
@@ -226,27 +226,40 @@ x_var1 = st.selectbox(
     key="original2"
 )
 
+bp_col, cp_col, his_col = st.columns(3)
+with bp_col:
+    cb_bp = st.checkbox("Make boxplot", key="checkboxbp")
+with cp_col:
+    cb_cp = st.checkbox("Make correlation plot", key="checkboxcp")
+with his_col:
+    cb_his = st.checkbox("Make histogram", key="checkboxhis")
 
-st.header(f"Boxplot for {y_var1} vs {x_var1} for period {selected_period}", divider= "blue")
-# Create the boxplot for the selected period
-test1 = sns.boxplot(data=filtered_df, x=x_var1, y=y_var1)
-st.pyplot(test1.get_figure())
-
-if x_var1 != None and y_var1 != None:
-    st.header(f"Correlation plot  for {y_var1} vs {x_var1} for period {selected_period}", divider= "blue")
-    # If you want to plot a regression line for the selected period
-    for i, group in filtered_df.groupby('PERIOD'):
-        sns.lmplot(x=x_var1, y=y_var1, data=group, fit_reg=True)
-        st.pyplot(plt.gcf())  # Display the plot for each period group
-
-if x_var1 != None:
-    st.header(f"Histogram  of {x_var1} for period {selected_period}", divider= "blue")
+if cb_bp:
+    st.header(f"Boxplot for {y_var1} vs {x_var1} for period {selected_period}", divider= "blue")
+    # Create the boxplot for the selected period
     plt.figure(figsize=(8, 6))
-    sns.histplot(filtered_df[x_var1], kde=True, color='blue', bins=10)
-    plt.title(f'Histogram of {x_var1} for Period: {selected_period}')
-    plt.xlabel(x_var1)
-    plt.ylabel('Frequency')
+    #test1 = sns.boxplot(data=filtered_df, x=x_var1, y=y_var1)
+    sns.boxplot(data=filtered_df, x=x_var1, y=y_var1)
+    #st.pyplot(test1.get_figure())
     st.pyplot(plt.gcf())
+
+if cb_cp:
+    if x_var1 != None and y_var1 != None:
+        st.header(f"Correlation plot  for {y_var1} vs {x_var1} for period {selected_period}", divider= "blue")
+        # If you want to plot a regression line for the selected period
+        for i, group in filtered_df.groupby('PERIOD'):
+            sns.lmplot(x=x_var1, y=y_var1, data=group, fit_reg=True)
+            st.pyplot(plt.gcf())  # Display the plot for each period group
+
+if cb_his:
+    if x_var1 != None:
+        st.header(f"Histogram  of {x_var1} for period {selected_period}", divider= "blue")
+        plt.figure(figsize=(8, 6))
+        sns.histplot(filtered_df[x_var1], kde=True, color='blue', bins=10)
+        plt.title(f'Histogram of {x_var1} for Period: {selected_period}')
+        plt.xlabel(x_var1)
+        plt.ylabel('Frequency')
+        st.pyplot(plt.gcf())
 
 
 st.header("Heatmap for all variables")
