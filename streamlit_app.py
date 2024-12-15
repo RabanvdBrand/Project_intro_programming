@@ -72,10 +72,13 @@ df_outliers = df.copy()
 df.loc[:, columns_to_check] = df.loc[:, columns_to_check].fillna(mean_values)
 
 st.header("Zero values after taking the mean", divider= "blue")
+col_imp1, col_imp2 = st.columns(2)
 columns_to_check2 = ["AGE", "SEX", "BMI", "TOTCHOL"]
 (df[columns_to_check2] == 0).sum()
-st.write(df[columns_to_check1].isnull().sum())
-
+with col_imp1:
+    st.write(df[columns_to_check1].isnull().sum())
+with col_imp2:
+    st.write(df_outliers[columns_to_check1].isnull().sum())
 #remove outliers in cholesterol and BMI of whole dataset.
 df.loc[(df['TOTCHOL'] <= 100) | (df['TOTCHOL'] > 400), 'TOTCHOL'] = np.nan
 df.loc[(df['BMI'] <= 10) | (df['BMI'] >= 50), 'BMI'] = np.nan
@@ -114,7 +117,11 @@ Second_followup.loc[:, columns_to_check3] = Second_followup.loc[:, columns_to_ch
 df.loc[df.PERIOD == 3]["LDLC"] = Second_followup["LDLC"]
 df.loc[df.PERIOD == 3]["HDLC"] = Second_followup["HDLC"]
 st.header("Zero values for HDLC and LC", divider= "blue")
-st.write((Second_followup[columns_to_check3] == 0).sum())
+col_h_ldlc1, col_h_ldlc2 = st.columns(2)
+with col_h_ldlc1:
+    st.write((Second_followup[columns_to_check3] == 0).sum())
+with col_h_ldlc2:
+    st.write((df_outliers.loc[df_outliers.PERIOD == 3][columns_to_check3] == 0).sum())
 
 st.header("Histograms before and after outlier removal", divider = 'blue')
 col1, col2 = st.columns(2)
