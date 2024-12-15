@@ -31,47 +31,28 @@ from sklearn.neighbors import KNeighborsClassifier
 from lightgbm import LGBMClassifier
 from xgboost import XGBClassifier
 from catboost import CatBoostClassifier
-import shap
-# You can set a general style for your plots like this
-#plt.style.use('ggplot')
-# plt.style.use('seaborn-whitegrid')
 
-#import altair as alt
-#alt.data_transformers.disable_max_rows()
-#from sklearn.model_selection import train_test_split, cross_validate
-#from sklearn.preprocessing import MinMaxScaler, StandardScaler
-#from sklearn.compose import make_column_transformer
-#from sklearn.metrics import classification_report, accuracy_score, ConfusionMatrixDisplay
-#from sklearn.ensemble import RandomForestClassifier
-#from sklearn.linear_model import LogisticRegression
-#from sklearn.model_selection import RepeatedStratifiedKFold
-#from sklearn.model_selection import cross_val_score
-#from sklearn.inspection import permutation_importance
-#from sklearn.pipeline import Pipeline
-#from sklearn.metrics import RocCurveDisplay
-#pd.set_option('display.max_columns', None)
-#import warnings
-#warnings.filterwarnings("ignore")
+
 
 st.header("Research question")
-st.write("How does cigarette smoking (CURSMOKE) and daily cigarette consumption (CIGPDAY) impact the incidence of stroke (STROKE) and coronary heart disease (ANYCHD)?")
+st.write("How does cigarette smoking (CURSMOKE) and cholesterol (TOTCHOL, HDLC, LDLC) impact the incidence of coronary heart disease (ANYCHD)?")
 
 st.header("Dataframe description", divider= "blue")
 df = pd.read_csv('https://raw.githubusercontent.com/LUCE-Blockchain/Databases-for-teaching/refs/heads/main/Framingham%20Dataset.csv')
 
 st.write(df.describe())
 
-columns_to_check = ["CURSMOKE", "CIGPDAY", "ANYCHD", "AGE", "SEX", "BMI", "TOTCHOL", "HDLC", "LDLC"]
+columns_to_check = ["CURSMOKE", "ANYCHD", "AGE", "SEX", "BMI", "TOTCHOL", "HDLC", "LDLC"]
 
 
-columns_to_check1 = ["CURSMOKE", "CIGPDAY", "ANYCHD", "AGE", "SEX", "BMI", "TOTCHOL"]
+columns_to_check1 = ["CURSMOKE", "ANYCHD", "AGE", "SEX", "BMI", "TOTCHOL"]
 
 mean_values = df[columns_to_check].mean()
 df_outliers = df.copy()
 # Fill NaN values in the specified columns with the calculated means
 df.loc[:, columns_to_check] = df.loc[:, columns_to_check].fillna(mean_values)
 
-st.header("Zero values after taking the mean", divider= "blue")
+st.header("Zero values after replacing with the mean", divider= "blue")
 col_imp1, col_imp2 = st.columns(2)
 columns_to_check2 = ["AGE", "SEX", "BMI", "TOTCHOL"]
 (df[columns_to_check2] == 0).sum()
@@ -88,8 +69,6 @@ df.loc[(df['BMI'] <= 10) | (df['BMI'] >= 50), 'BMI'] = np.nan
 df.TOTCHOL = df.TOTCHOL.fillna(df.TOTCHOL.mean())
 df.BMI = df.BMI.fillna(df.BMI.mean())
 
-st.header("Zero values after taking out the outliers and the missing values", divider= "blue")
-st.write(df[columns_to_check2].isnull().sum())
 
 from sklearn.impute import KNNImputer
 imputer = KNNImputer(n_neighbors=2).set_output(transform = "pandas")
@@ -124,6 +103,10 @@ with col_h_ldlc2:
     st.write((df_outliers.loc[df_outliers.PERIOD == 3][columns_to_check3] == 0).sum())
 
 st.header("Histograms before and after outlier removal", divider = 'blue')
+st.write("Outliers were removed for the features total cholesterol, BMI, HDLC, and LDLC")
+st.subheader("Outlier for removal total cholesterol")
+st.write("Total cholesterol values above 400 and below 100 were removed from the dataset, and replaced with the mean")
+
 col1, col2 = st.columns(2)
 
 with col1:
@@ -142,6 +125,9 @@ with col2:
     plt.xlabel("TOTCHOL")
     plt.ylabel('Frequency')
     st.pyplot(plt.gcf())
+
+st.subheader("Outlier removal for total BMI")
+st.write("BMI values above 50 and below 10 were removed from the dataset, and replaced with the mean")
 
 col3, col4 = st.columns(2)
 
@@ -162,6 +148,9 @@ with col4:
     plt.ylabel('Frequency')
     st.pyplot(plt.gcf())
 
+
+st.subheader("Outlier removal for total HDLC")
+st.write("HDLC values above 80 and below 35 were removed from the dataset, and replaced with the mean")
 col5, col6 = st.columns(2)
 
 with col5:
@@ -181,6 +170,8 @@ with col6:
     plt.ylabel('Frequency')
     st.pyplot(plt.gcf())
 
+st.subheader("Outlier removal for total LDLC")
+st.write("LDLC values above 200 and below 40 were removed from the dataset, and replaced with the mean")
 col7, col8 = st.columns(2)
 
 with col7:
@@ -251,22 +242,26 @@ if cb_bp:
     st.pyplot(plt.gcf())
 
 if cb_cp:
+    st.header(f"Correlation plot  for {y_var1} vs {x_var1} for period {selected_period}", divider= "blue")
     if x_var1 != None and y_var1 != None:
-        st.header(f"Correlation plot  for {y_var1} vs {x_var1} for period {selected_period}", divider= "blue")
         # If you want to plot a regression line for the selected period
         for i, group in filtered_df.groupby('PERIOD'):
             sns.lmplot(x=x_var1, y=y_var1, data=group, fit_reg=True)
             st.pyplot(plt.gcf())  # Display the plot for each period group
-
+    else:
+        st.write("Please select both an X and a Y variable")
 if cb_his:
+    st.header(f"Histogram  of {x_var1} for period {selected_period}", divider= "blue")
     if x_var1 != None:
-        st.header(f"Histogram  of {x_var1} for period {selected_period}", divider= "blue")
+        
         plt.figure(figsize=(8, 6))
         sns.histplot(filtered_df[x_var1], kde=True, color='blue', bins=10)
         plt.title(f'Histogram of {x_var1} for Period: {selected_period}')
         plt.xlabel(x_var1)
         plt.ylabel('Frequency')
         st.pyplot(plt.gcf())
+    else:
+        st.write("Please select an X variable")
 
 
 st.header("Heatmap for all variables")
@@ -277,7 +272,7 @@ st.pyplot(plt.gcf())
 
 
 
-tot_df_model = df[["CURSMOKE", "CIGPDAY", "ANYCHD", "AGE", "SEX", "BMI", "TOTCHOL", "HDLC", "LDLC", "PERIOD"]]
+tot_df_model = df[["CURSMOKE", "ANYCHD", "AGE", "SEX", "BMI", "TOTCHOL", "HDLC", "LDLC", "PERIOD"]]
 
 # Define a model function
 def model(classifier, df_to_model):
