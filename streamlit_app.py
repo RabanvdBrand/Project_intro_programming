@@ -28,10 +28,9 @@ from sklearn.metrics import confusion_matrix
 from sklearn.neural_network import MLPClassifier
 from sklearn.svm import SVC
 from sklearn.neighbors import KNeighborsClassifier
-from lightgbm import LGBMClassifier
-from xgboost import XGBClassifier
-from catboost import CatBoostClassifier
 
+from catboost import CatBoostClassifier
+import shap
 
 
 st.header("Research question")
@@ -316,6 +315,20 @@ def Confusion_matrix(model, X_test, y_test, ax=None):
     ax.set_ylabel("Actual")
     plt.tight_layout()
 
+#SHAP values function
+def Shap_stats(classifier, X_test, Xtrain):
+    shap_sample=shap.utils.sample(Xtrain,nsamples = 10, random_state=0)
+    explainer = shap.KernelExplainer(classifier.predict_proba, shap_sample)
+    shap_values = explainer.shap_values(X_test)
+    shap_values_for_class = shap_values[:,:,1]
+    feature_names = Xtrain.columns
+    if not isinstance(X_test, pd.DataFrame):
+        X_test = pd.Dataframe(X_test, columns = feature_names)
+    fig, ax = plt.subplots(nrows=1, sharex=True, sharey=True,figsize=(6,4), dpi=150)
+    shap.summary_plot(shap_values_for_class, X_test, plot_type="dot")
+    st.pyplot(fig)
+
+
 # Streamlit app
 st.header("Model Comparison")
 
@@ -333,10 +346,6 @@ elif model_choice == "Support Vector Machine":
     classifier = SVC(random_state=0, kernel='rbf', C=1.0, probability=True)
 elif model_choice == "K-nearest neighbour":
     classifier = KNeighborsClassifier(n_neighbors=5)
-elif model_choice == "LightGBM":
-    classifier = LGBMClassifier(random_state=0, n_estimators=100, learning_rate=0.1)
-elif model_choice == "Xgboost":
-    classifier = XGBClassifier(random_state=0, n_estimators=100, learning_rate=0.1)
 elif model_choice == "Catboost":
     classifier = CatBoostClassifier(random_state=0, iterations=100, learning_rate=0.1, verbose=False)
 
@@ -363,4 +372,6 @@ fig, ax = plt.subplots()
 Confusion_matrix(classifier, X_test, y_test, ax=ax)
 st.pyplot(fig)
 
-
+#display SHAP values
+st.write("SHAP values:")
+Shap_stats(classifier, X_test, X_train)
