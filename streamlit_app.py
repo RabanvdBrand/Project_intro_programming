@@ -333,7 +333,7 @@ def Shap_stats(classifier, X_test, Xtrain):
 st.header("Model Comparison")
 
 # Model selection widget
-model_choice = st.selectbox("Choose a prediction model", ["Logistic Regression", "Random Forest", "Neural Network", "Support Vector Machine", "K-nearest neighbour", "LightGBM", "Catboost", "Xgboost"])
+model_choice = st.selectbox("Choose a prediction model", ["Logistic Regression", "Random Forest", "Neural Network", "Support Vector Machine", "K-nearest neighbour", "Catboost"])
 
 # Define classifiers based on selection
 if model_choice == "Logistic Regression":
